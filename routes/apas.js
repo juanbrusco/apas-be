@@ -105,7 +105,7 @@ router.get("/:table/paginated/:page/:pageSize/:orderValue", (req, res) => {
     `,` +
     resultPerPage;
   const queryCount = `SELECT count(*) FROM ` + table;
-  console.log(query, offset, resultPerPage);
+  console.log(query);
   db.all(query, [], (err, rows) => {
     if (err) {
       console.error(err.message);
@@ -208,9 +208,10 @@ router.get("/:table/:id", (req, res) => {
   const { id } = req.params;
   const { table } = req.params;
 
-  const query = `SELECT * FROM ` + table + ` WHERE ID = ?`;
+  const query = `SELECT * FROM ` + table + ` WHERE ID = ` + id;
+  console.log(query);
 
-  db.all(query, [id], (err, rows) => {
+  db.all(query, [], (err, rows) => {
     if (err) {
       console.error(err.message);
       return res.status(500).json({ message: err.message });
@@ -224,9 +225,10 @@ router.delete("/:table/:id", (req, res) => {
   const { id } = req.params;
   const { table } = req.params;
 
-  const query = `DELETE FROM ` + table + ` WHERE ID = ?`;
+  const query = `DELETE FROM ` + table + ` WHERE ID = ` + id;
+  console.log(query);
 
-  db.run(query, [id], function (err) {
+  db.run(query, [], function (err) {
     if (err) {
       console.error(err.message);
       return res.status(500).json({ message: err.message });
@@ -279,9 +281,10 @@ router.post("/:table/add", (req, res) => {
 
 router.delete("/cesionario/:id", (req, res) => {
   const bookId = req.params.id;
-  const q = "DELETE FROM Cesionario WHERE ID=?";
+  const q = "DELETE FROM Cesionario WHERE ID = " + bookId;
+  console.log(query);
 
-  db.query(q, [bookId], (err, data) => {
+  db.query(q, [], (err, data) => {
     if (err) return res.json(err);
     return res.json("Cesionario has been deleted.");
   });
@@ -317,34 +320,34 @@ router.put("/:table/edit/:id", (req, res) => {
   });
 });
 
-router.get("/backup", (req, res) => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1; // Months are 0-indexed
-  const day = now.getDate();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-  const seconds = now.getSeconds();
-  const formattedDate = `${day.toString().padStart(2, "0")}${month
-    .toString()
-    .padStart(2, "0")}${year}`;
-  const formattedTime = `${hours.toString().padStart(2, "0")}:${minutes
-    .toString()
-    .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-  const sourceFile = "../db/apas.db";
-  const destinationFile = `../db/apas_backup_` + formattedDate + `.db`;
-  const sourcePath = path.join(__dirname, sourceFile);
-  const destinationPath = path.join(__dirname, destinationFile);
+// router.get("/backup", (req, res) => {
+//   const now = new Date();
+//   const year = now.getFullYear();
+//   const month = now.getMonth() + 1; // Months are 0-indexed
+//   const day = now.getDate();
+//   const hours = now.getHours();
+//   const minutes = now.getMinutes();
+//   const seconds = now.getSeconds();
+//   const formattedDate = `${day.toString().padStart(2, "0")}${month
+//     .toString()
+//     .padStart(2, "0")}${year}`;
+//   const formattedTime = `${hours.toString().padStart(2, "0")}:${minutes
+//     .toString()
+//     .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+//   const sourceFile = "../db/apas.db";
+//   const destinationFile = `../db/apas_backup_` + formattedDate + `.db`;
+//   const sourcePath = path.join(__dirname, sourceFile);
+//   const destinationPath = path.join(__dirname, destinationFile);
 
-  fs.copyFile(sourcePath, destinationPath, (err) => {
-    if (err) {
-      console.error(err.message);
-      return res.status(500).json({ message: err.message });
-    }
-    console.log("File copied successfully!");
-    res.send(formattedDate);
-  });
-});
+//   fs.copyFile(sourcePath, destinationPath, (err) => {
+//     if (err) {
+//       console.error(err.message);
+//       return res.status(500).json({ message: err.message });
+//     }
+//     console.log("File copied successfully!");
+//     res.send(formattedDate);
+//   });
+// });
 
 router.put("/:table/updateBackupDate/:id/:date", (req, res) => {
   const { table } = req.params;
@@ -371,6 +374,7 @@ router.get("/:table/last/:valueToCalc", (req, res) => {
   const { valueToCalc } = req.params;
   const query =
     `SELECT * FROM ` + table + ` ORDER BY ` + valueToCalc + ` DESC LIMIT 1;`;
+  console.log(query);
 
   db.all(query, [], (err, rows) => {
     if (err) {
@@ -379,72 +383,6 @@ router.get("/:table/last/:valueToCalc", (req, res) => {
     }
 
     res.send(rows[0]);
-  });
-});
-
-router.post("/listsToExport", (req, res) => {
-  const {
-    id,
-    table,
-    page,
-    pageSize,
-    orderValue,
-    dateFecVen,
-    monthListInhFecha,
-    yearListInhFecha,
-    mante,
-  } = req.body;
-  if (!orderValue) {
-    orderValue = "ID";
-  }
-  const resultPerPage = pageSize;
-  const offset = (page ? page : 1 - 1) * resultPerPage;
-  let query = "";
-  let queryCount = "";
-  let q = null;
-  switch (id) {
-    case "ListSepVencidas":
-      let dListSepVencidas = utils.parseDateToQuery(
-        dateFecVen ? dateFecVen : "01/01/1990"
-      );
-      q = queriesToExport.ListSepVencidas(table, dListSepVencidas, orderValue);
-      query = q.query;
-      queryCount = q.queryCount;
-      break;
-    case "ListNicMonth":
-      let mListNicMonth = utils.getCurrentMonthYear();
-      q = queriesToExport.ListNicMonth(table, orderValue, mListNicMonth);
-      query = q.query;
-      queryCount = q.queryCount;
-      break;
-    default:
-      return res.status(500).json({ message: "error db query" });
-  }
-
-  console.log(query);
-  db.all(query, [offset, resultPerPage], (err, rows) => {
-    if (err) {
-      console.error(err.message);
-      return res.status(500).json({ message: err.message });
-    }
-
-    let response = {
-      total: 0,
-      result: rows,
-      totalPages: 0,
-      currentPage: page,
-    };
-
-    db.all(queryCount, [], (err2, rows2) => {
-      if (err2) {
-        console.error(err2.message);
-        return res.status(500).json({ message: err2.message });
-      }
-      let count = rows2[0]["count(*)"];
-      response.total = count;
-      response.totalPages = Math.round(count / resultPerPage) + 1;
-      res.send(response);
-    });
   });
 });
 
