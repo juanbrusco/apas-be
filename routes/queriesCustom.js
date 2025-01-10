@@ -70,7 +70,12 @@ const getResumenInt18 = (contribuyente, year, month, day, orderValue) => {
   return { query: query };
 };
 
-const getLotesByFRetencion = (fRetencion, orderValue) => {
+const getLotesByFRetencion = (
+  fRetencion,
+  orderValue,
+  offset,
+  resultPerPage
+) => {
   let q;
   const [year, month, day] = fRetencion.split("-");
   if (year != "*" && month != "*" && day != "*") {
@@ -100,7 +105,10 @@ const getLotesByFRetencion = (fRetencion, orderValue) => {
     q +
     ` ORDER BY ` +
     orderValue +
-    ` ASC LIMIT ?,?`;
+    ` ASC LIMIT ` +
+    offset +
+    `,` +
+    resultPerPage;
   let queryCount = `SELECT count(*) FROM LOTES WHERE ` + q;
   return { query: query, queryCount: queryCount };
 };

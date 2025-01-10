@@ -148,7 +148,12 @@ router.get(
     let query = "";
     let queryCount = "";
     if (searchProp === "FRETENCION") {
-      let q = queriesCustom.getLotesByFRetencion(searchValue, orderValue);
+      let q = queriesCustom.getLotesByFRetencion(
+        searchValue,
+        orderValue,
+        offset,
+        resultPerPage
+      );
       query = q.query;
       queryCount = q.queryCount;
     } else {
