@@ -3,7 +3,6 @@ const router = express.Router();
 const db = require("../models/apas");
 const fs = require("fs");
 const path = require("path");
-const queriesToExport = require("./queriesListsToExport");
 const queriesCustom = require("./queriesCustom");
 const utils = require("./utils");
 
