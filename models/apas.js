@@ -1,4 +1,3 @@
-const sqlite3 = require("sqlite3").verbose();
 const { Database } = require("@sqlitecloud/drivers");
 const dotenv = require("dotenv");
 dotenv.config();

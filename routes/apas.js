@@ -96,10 +96,17 @@ router.get("/:table/paginated/:page/:pageSize/:orderValue", (req, res) => {
   const resultPerPage = pageSize;
   const offset = (page ? page : 1 - 1) * resultPerPage;
   const query =
-    `SELECT * FROM ` + table + ` ORDER BY ` + orderValue + ` ASC LIMIT ?,?`;
+    `SELECT * FROM ` +
+    table +
+    ` ORDER BY ` +
+    orderValue +
+    ` ASC LIMIT ` +
+    offset +
+    `,` +
+    resultPerPage;
   const queryCount = `SELECT count(*) FROM ` + table;
   console.log(query, offset, resultPerPage);
-  db.all(query, [offset, resultPerPage], (err, rows) => {
+  db.all(query, [], (err, rows) => {
     if (err) {
       console.error(err.message);
       return res.status(500).json({ message: err.message });
@@ -155,7 +162,10 @@ router.get(
         searchValue +
         `%' ORDER BY ` +
         orderValue +
-        ` ASC LIMIT ?,?`;
+        ` ASC LIMIT ` +
+        offset +
+        `,` +
+        resultPerPage;
       queryCount =
         `SELECT count(*) FROM ` +
         table +
@@ -167,7 +177,7 @@ router.get(
     }
 
     console.log(query);
-    db.all(query, [offset, resultPerPage], (err, rows) => {
+    db.all(query, [], (err, rows) => {
       if (err) {
         console.error(err.message);
         return res.status(500).json({ message: err.message });
